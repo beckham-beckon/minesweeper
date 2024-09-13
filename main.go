@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -10,18 +9,57 @@ import (
 )
 
 const (
-	LENGTH = 9
-	HEIGHT = 9
+	LENGTH  = 9
+	BREADTH = 9
+	MINES   = 10
 )
 
-type Block struct {
-	IsMine bool
-	Value  int64
+func generateGrid() [][]int {
+	grid := make([][]int, LENGTH)
+	for i := range LENGTH {
+		grid[i] = make([]int, BREADTH)
+		for j := range BREADTH {
+			grid[i][j] = 0
+		}
+	}
+
+	generateCoords := func() (int, int) {
+		x := rand.Intn(LENGTH)
+		y := rand.Intn(BREADTH)
+		return x, y
+	}
+
+	for range MINES {
+		var X, Y int
+		for {
+			x, y := generateCoords()
+			if grid[x][y] >= 0 {
+				grid[x][y] = -9 // Max mines nearby can be 8
+				X = x
+				Y = y
+				break
+			}
+		}
+
+		for i := -1; i < 2; i++ {
+			for j := -1; j < 2; j++ {
+				if i == 0 && j == 0 {
+					continue
+				}
+				new_x := X + i
+				new_y := Y + j
+
+				if 0 <= new_x && new_x < LENGTH && 0 <= new_y && new_y < BREADTH {
+					grid[new_x][new_y]++
+				}
+			}
+		}
+	}
+	return grid
 }
 
-func generateGrid() [][]Block {
-	grid := make([][]Block, LENGTH)
-	return grid
+func renderGrid(grid [][]int) {
+
 }
 
 func main() {
