@@ -28,25 +28,41 @@ func (Q *CoordQ) Dequeue() Coord {
 }
 
 const (
-	LENGTH         = 9
-	BREADTH        = 9
-	MINES          = 10
-	FLAGRUNE       = '\u2691'
-	EMPTYBOXRUNE   = '\u2610'
-	MINERUNE       = '\u2739'
+	LENGTH       = 9
+	BREADTH      = 9
+	MINES        = 10
+	FLAGRUNE     = '\u2691'
+	EMPTYBOXRUNE = '\u2610'
+	MINERUNE     = '\u2739'
+	SMILEYRUNE   = '\u263A'
+	FROWNRUNE    = '\u2639'
+)
+
+var (
+	mineStyle      = tcell.StyleDefault.Foreground(tcell.ColorRed)
+	numberStyle    = tcell.StyleDefault.Foreground(tcell.ColorYellow)
+	unExplored     = make([][]int, LENGTH)
+	grid           = make([][]int, LENGTH)
+	exploreQ       = &CoordQ{}
 	X_OFFSET       = 10
 	Y_OFFSET       = 5
 	RENDER_LENGTH  = 4*LENGTH + X_OFFSET
 	RENDER_BREADTH = 2*BREADTH + Y_OFFSET
+	GAME_OVER      = false
+	SCREEN_WIDTH   = 0
+	SCREEN_HEIGHT  = 0
 )
 
-var (
-	mineStyle   = tcell.StyleDefault.Foreground(tcell.ColorRed)
-	numberStyle = tcell.StyleDefault.Foreground(tcell.ColorYellow)
-	unExplored  = make([][]int, LENGTH)
-	grid        = make([][]int, LENGTH)
-	exploreQ    = &CoordQ{}
-)
+func handleResize(s tcell.Screen) {
+	s.Clear()
+	SCREEN_WIDTH, SCREEN_HEIGHT = s.Size()
+	X_OFFSET = (SCREEN_WIDTH / 2) - 2*LENGTH
+	Y_OFFSET = (SCREEN_HEIGHT / 2) - BREADTH
+	RENDER_LENGTH = 4*LENGTH + X_OFFSET
+	RENDER_BREADTH = 2*BREADTH + Y_OFFSET
+	drawGrid(s)
+	renderGrid(s, unExplored)
+}
 
 func generateGrids() {
 	for i := 0; i < LENGTH; i++ {
@@ -168,6 +184,13 @@ func renderGrid(s tcell.Screen, grid [][]int) {
 		}
 		j++
 	}
+	r := SMILEYRUNE
+	style := numberStyle
+	if GAME_OVER {
+		r = FROWNRUNE
+		style = mineStyle
+	}
+	s.SetContent(SCREEN_WIDTH/2, Y_OFFSET-2, r, nil, style)
 }
 
 func explore() {
@@ -192,8 +215,6 @@ func explore() {
 }
 
 func main() {
-	generateGrids()
-
 	s, err := tcell.NewScreen()
 	if err != nil {
 		log.Fatalf("Error Creating new screen: %v", err)
@@ -207,8 +228,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	drawGrid(s)
-	renderGrid(s, unExplored)
+	generateGrids()
+	handleResize(s)
 
 	for {
 		s.Show()
@@ -217,6 +238,7 @@ func main() {
 
 		switch ev := ev.(type) {
 		case *tcell.EventResize:
+			handleResize(s)
 			s.Sync()
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape {
@@ -231,6 +253,7 @@ func main() {
 					i := (x - X_OFFSET) / 4
 					j := (y - Y_OFFSET) / 2
 					if grid[i][j] < 0 {
+						GAME_OVER = true
 						renderGrid(s, grid)
 						break
 					}
