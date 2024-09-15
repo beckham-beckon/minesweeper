@@ -14,6 +14,12 @@ const (
 	MINES   = 10
 )
 
+var (
+	mineStyle   = tcell.StyleDefault.Foreground(tcell.ColorRed)
+	numberStyle = tcell.StyleDefault.Foreground(tcell.ColorYellow)
+	unExplored  = make([][]int, LENGTH)
+)
+
 func generateGrid() [][]int {
 	grid := make([][]int, LENGTH)
 	for i := range LENGTH {
@@ -109,39 +115,76 @@ func renderGrid(s tcell.Screen, grid [][]int) {
 	x2, y2 := 4*LENGTH, 2*BREADTH
 	i, j := 0, 0
 	for row := y1; row < y2; row = row + 2 {
-		j = 0
+		i = 0
 		for col := x1; col < x2; col = col + 4 {
 			r := ' '
+			style := tcell.StyleDefault
 			if grid[i][j] < 0 {
 				r = '*'
+				style = mineStyle
 			} else if grid[i][j] > 0 {
 				r = rune('0' + grid[i][j])
+				style = numberStyle
+				if grid[i][j] == 10 {
+					r = '\u2610'
+					style = tcell.StyleDefault
+				}
 			}
-			s.SetContent(col, row, r, nil, tcell.StyleDefault)
-			j++
+			s.SetContent(col, row, r, nil, style)
+			i++
 		}
-		i++
+		j++
 	}
+}
 
+func explore(grid [][]int, i int, j int, isNumber bool) {
+	if i >= LENGTH || j >= BREADTH || i < 0 || j < 0 {
+		return
+	}
+	if isNumber {
+		if grid[i][j] != 0 {
+			return
+		}
+		unExplored[i][j] = 0
+		isNumber = false
+	}
+	if grid[i][j] >= 0 {
+		unExplored[i][j] = grid[i][j]
+		isNumber = true
+		if grid[i][j] == 0 {
+			isNumber = false
+		}
+	}
+	explore(grid, i+1, j, isNumber)
+	explore(grid, i, j+1, isNumber)
+	explore(grid, i-1, j, isNumber)
+	explore(grid, i, j-1, isNumber)
 }
 
 func main() {
+	file, err := os.OpenFile("log.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	logger := log.New(file, "", log.LstdFlags)
+
 	grid := generateGrid()
 
-	unExplored := make([][]int, LENGTH)
 	for i := range LENGTH {
 		unExplored[i] = make([]int, BREADTH)
 		for j := range BREADTH {
-			unExplored[i][j] = 0
+			unExplored[i][j] = 10
 		}
 	}
 
 	s, err := tcell.NewScreen()
 	if err != nil {
-		log.Fatalf("Error Creating new screen: %v", err)
+		logger.Fatalf("Error Creating new screen: %v", err)
 	}
 	if err := s.Init(); err != nil {
-		log.Fatalf("Error initiating new Screen: %v", err)
+		logger.Fatalf("Error initiating new Screen: %v", err)
 	}
 
 	s.EnableMouse()
@@ -150,7 +193,7 @@ func main() {
 		os.Exit(0)
 	}
 	drawGrid(s)
-	// renderGrid(s, unExplored)
+	renderGrid(s, unExplored)
 
 	for {
 		s.Show()
@@ -169,17 +212,23 @@ func main() {
 			switch ev.Buttons() {
 			case tcell.Button1:
 				c, _, _, _ := s.GetContent(x, y)
-				if x < 4*LENGTH && y < 2*BREADTH && c == ' ' {
-					// x = x / 4
-					// y = y / 2
-					i := (x - 2) / 4
-					j := (y - 1) / 2
+				if x < 4*LENGTH && y < 2*BREADTH && c == '\u2610' {
+					logger.Println(x, y, c)
+					i := x / 4
+					j := y / 2
+					logger.Println(i, j, grid[i][j])
 					if grid[i][j] < 0 {
 						renderGrid(s, grid)
+						break
 					}
 					if grid[i][j] > 0 {
-						s.SetContent(x, y, rune('0'+grid[i][j]), nil, tcell.StyleDefault)
+						unExplored[i][j] = grid[i][j]
+						// s.SetContent(x, y, rune('0'+grid[i][j]), nil, numberStyle)
+						renderGrid(s, unExplored)
+						break
 					}
+					explore(grid, i, j, false)
+					renderGrid(s, unExplored)
 				}
 			}
 		}
