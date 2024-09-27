@@ -16,9 +16,9 @@ const (
 )
 
 var (
-	mineStyle   = tcell.StyleDefault.Foreground(tcell.ColorRed)
-	numberStyle = tcell.StyleDefault.Foreground(tcell.ColorYellow)
-	titleStyle  = tcell.StyleDefault.Foreground(tcell.ColorPurple)
+	MineStyle   = tcell.StyleDefault.Foreground(tcell.ColorRed)
+	NumberStyle = tcell.StyleDefault.Foreground(tcell.ColorYellow)
+	TitleStyle  = tcell.StyleDefault.Foreground(tcell.ColorPurple)
 )
 
 type UIManager struct {
@@ -33,7 +33,7 @@ type UIManager struct {
 }
 
 func NewUIManager() (*UIManager, error) {
-	var UIManager UIManager
+	var uiManager UIManager
 	newScreen, err := tcell.NewScreen()
 	if err != nil {
 		return nil, err
@@ -42,18 +42,20 @@ func NewUIManager() (*UIManager, error) {
 		return nil, err
 	}
 
-	UIManager.Screen = newScreen
+	newScreen.Clear()
 
-	UIManager.ScreenHeight, UIManager.ScreenWidth = newScreen.Size()
+	uiManager.Screen = newScreen
 
-	UIManager.ScreenType = common.MENU
+	uiManager.ScreenWidth, uiManager.ScreenHeight = newScreen.Size()
 
-	return &UIManager, nil
+	uiManager.ScreenType = common.MENU
+
+	return &uiManager, nil
 }
 
 func (ui *UIManager) Quit() {
 	ui.Screen.Fini()
-  os.Exit(0)
+	os.Exit(0)
 }
 
 func (ui *UIManager) RenderScreen() {
@@ -64,18 +66,20 @@ func (ui *UIManager) RenderScreen() {
 }
 
 func (ui *UIManager) HandleResize() {
+	// Update Screen height and width
+	ui.ScreenWidth, ui.ScreenHeight = ui.Screen.Size()
 	switch ui.ScreenType {
-	case "MENU":
+	case common.MENU:
 		ui.HandleResizeMenu()
-	case "GAME":
+	case common.GAME:
 		ui.HandleResizeGrid()
-	case "GAMEOVER":
+	case common.GAMEOVER:
 		ui.HandeResizeGameOver()
 	}
 }
 
 func (ui *UIManager) HandleResizeMenu() {
-  ui.DrawMenu()
+	ui.DrawMenu()
 }
 
 func (ui *UIManager) HandeResizeGameOver() {
@@ -83,7 +87,6 @@ func (ui *UIManager) HandeResizeGameOver() {
 
 func (ui *UIManager) HandleResizeGrid() {
 	ui.Screen.Clear()
-	ui.ScreenWidth, ui.ScreenHeight = ui.Screen.Size()
 
 	ui.XOffset = (ui.ScreenWidth / 2) - 2*ui.XFinish
 	ui.YOffest = (ui.ScreenHeight / 2) - ui.YFinish
@@ -111,10 +114,10 @@ func (ui *UIManager) PopulateGrid(grid [][]int) {
 			style := tcell.StyleDefault
 			if grid[i][j] < 0 {
 				r = MINERUNE
-				style = mineStyle
+				style = MineStyle
 			} else if grid[i][j] > 0 {
 				r = rune('0' + grid[i][j])
-				style = numberStyle
+				style = NumberStyle
 				if grid[i][j] == 10 {
 					r = EMPTYBOXRUNE
 					style = tcell.StyleDefault
