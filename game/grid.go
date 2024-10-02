@@ -1,23 +1,26 @@
 package game
 
-import "math/rand"
+import (
+	"math/rand"
 
-var (
-	LENGTH  = 9
-	BREADTH = 9
-	MINES   = 10
+	c "example.com/minesweeper/common"
 )
 
 var (
-	Grid       = make([][]int, LENGTH)
-	Unexplored = make([][]int, LENGTH)
+	Grid       [][]int
+	Unexplored [][]int
+	Init       = true
 )
 
 func InitGrids() {
-	for i := 0; i < LENGTH; i++ {
-		Grid[i] = make([]int, BREADTH)
-		Unexplored[i] = make([]int, BREADTH)
-		for j := 0; j < BREADTH; j++ {
+  Init = false
+	Grid = make([][]int, c.Length)
+	Unexplored = make([][]int, c.Length)
+
+	for i := 0; i < c.Length; i++ {
+		Grid[i] = make([]int, c.Breadth)
+		Unexplored[i] = make([]int, c.Breadth)
+		for j := 0; j < c.Breadth; j++ {
 			Grid[i][j] = 0
 			Unexplored[i][j] = 10
 		}
@@ -27,10 +30,10 @@ func InitGrids() {
 
 func GenerateMines() {
 	generateRandomCoords := func() (int, int) {
-		return rand.Intn(LENGTH), rand.Intn(BREADTH)
+		return rand.Intn(c.Length), rand.Intn(c.Breadth)
 	}
 
-	for i := 0; i < MINES; i++ {
+	for i := 0; i < c.Mines; i++ {
 		var x, y int
 		// Place mine if block is not a mine
 		for {
@@ -52,7 +55,7 @@ func AdjustSurroundingCells(x int, y int) {
 				continue
 			}
 			newX, newY := x+i, y+j
-			if 0 <= newX && newX < LENGTH && 0 <= newY && newY < BREADTH {
+			if 0 <= newX && newX < c.Length && 0 <= newY && newY < c.Breadth {
 				Grid[newX][newY]++
 			}
 		}

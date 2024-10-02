@@ -9,4 +9,11 @@ const (
 var (
 	Length  int
 	Breadth int
+  Mines   int
 )
+
+type Coord struct {
+	X int
+	Y int
+}
+

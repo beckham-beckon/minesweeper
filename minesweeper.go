@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	file, err := os.OpenFile("l.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile("l.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
 		log.Fatalf("Failed to open log file: %v", err)
 	}
@@ -23,15 +23,8 @@ func main() {
 		log.Fatalf("%v", err)
 	}
 
-	log.Printf("%v", UI)
-
+  UI.Screen.EnableMouse()
 	UI.Screen.Clear()
-	UI.DrawMenu()
-
-	quit := func() {
-		UI.Screen.Fini()
-		os.Exit(0)
-	}
 
 	for {
 		UI.Screen.Show()
@@ -42,9 +35,9 @@ func main() {
 		case *tcell.EventResize:
 			UI.HandleResize()
 		case *tcell.EventKey:
-			if ev.Rune() == 'Q' || ev.Rune() == 'q' {
-				quit()
-			}
+			UI.HandleKeyEvent(ev)
+    case *tcell.EventMouse:
+      UI.HandleMouseEvent(ev)
 		}
 	}
 }

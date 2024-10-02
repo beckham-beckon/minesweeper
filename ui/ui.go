@@ -1,9 +1,11 @@
 package ui
 
 import (
+	"log"
 	"os"
 
 	"example.com/minesweeper/common"
+	"example.com/minesweeper/game"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -19,6 +21,7 @@ var (
 	MineStyle   = tcell.StyleDefault.Foreground(tcell.ColorRed)
 	NumberStyle = tcell.StyleDefault.Foreground(tcell.ColorYellow)
 	TitleStyle  = tcell.StyleDefault.Foreground(tcell.ColorPurple)
+	GridStyle   = tcell.StyleDefault.Foreground(tcell.ColorGray)
 )
 
 type UIManager struct {
@@ -26,7 +29,7 @@ type UIManager struct {
 	ScreenHeight int
 	ScreenWidth  int
 	XOffset      int
-	YOffest      int
+	YOffset      int
 	XFinish      int
 	YFinish      int
 	ScreenType   string
@@ -58,13 +61,6 @@ func (ui *UIManager) Quit() {
 	os.Exit(0)
 }
 
-func (ui *UIManager) RenderScreen() {
-	switch ui.ScreenType {
-	case common.MENU:
-		ui.HandleResize()
-	}
-}
-
 func (ui *UIManager) HandleResize() {
 	// Update Screen height and width
 	ui.ScreenWidth, ui.ScreenHeight = ui.Screen.Size()
@@ -88,44 +84,71 @@ func (ui *UIManager) HandeResizeGameOver() {
 func (ui *UIManager) HandleResizeGrid() {
 	ui.Screen.Clear()
 
-	ui.XOffset = (ui.ScreenWidth / 2) - 2*ui.XFinish
-	ui.YOffest = (ui.ScreenHeight / 2) - ui.YFinish
+	ui.XOffset = (ui.ScreenWidth / 2) - 2*common.Length
+	ui.YOffset = (ui.ScreenHeight / 2) - common.Breadth
+
+	ui.XFinish = 4*common.Length + ui.XOffset
+	ui.YFinish = 2*common.Breadth + ui.YOffset
+
+	if game.Init {
+		game.InitGrids()
+	}
 
 	ui.DrawGrid()
+
+	if ui.ScreenType == common.GAME {
+		ui.PopulateGrid(game.Unexplored)
+	} else {
+		ui.PopulateGrid(game.Grid)
+	}
 }
 
-func (ui *UIManager) DrawGrid() {
+func (ui *UIManager) HandleKeyEvent(ev *tcell.EventKey) {
+	if ev.Rune() == 'q' || ev.Rune() == 'Q' {
+		ui.Quit()
+	}
+	switch ui.ScreenType {
+	case common.MENU:
+		ui.HandleMenuKeyEvent(ev)
+	}
 }
 
-func (ui *UIManager) PopulateGrid(grid [][]int) {
-	/*
-	   Coordinate (XOffset, YOffest) starts with the grid lines
-	   Populate numbers from the next coordinate for
-	   x -> XOffset + 2
-	   y -> YOffest + 1
-	*/
-	x1, y1 := ui.XOffset+2, ui.YOffest+1
-	x2, y2 := ui.XFinish+2, ui.YFinish+1
-	i, j := 0, 0
-	for row := y1; row < y2; row = row + 2 {
-		i = 0
-		for col := x1; col < x2; col = col + 4 {
-			r := ' '
-			style := tcell.StyleDefault
-			if grid[i][j] < 0 {
-				r = MINERUNE
-				style = MineStyle
-			} else if grid[i][j] > 0 {
-				r = rune('0' + grid[i][j])
-				style = NumberStyle
-				if grid[i][j] == 10 {
-					r = EMPTYBOXRUNE
-					style = tcell.StyleDefault
-				}
+func (ui *UIManager) HandleMenuKeyEvent(ev *tcell.EventKey) {
+	switch ev.Key() {
+	case tcell.KeyUp:
+		ui.MenuRenderSelector(-1)
+	case tcell.KeyDown:
+		ui.MenuRenderSelector(1)
+	case tcell.KeyEnter:
+		ui.MenuProcessSelect()
+	}
+}
+
+func (ui *UIManager) HandleMouseEvent(ev *tcell.EventMouse) {
+	x, y := ev.Position()
+	switch ev.Buttons() {
+	case tcell.Button1:
+		c, _, _, _ := ui.Screen.GetContent(x, y)
+		if x < ui.XFinish && y < ui.YFinish && (c == EMPTYBOXRUNE || c == FLAGRUNE) {
+			i := (x - ui.XOffset) / 4
+			j := (y - ui.YOffset) / 2
+			if game.Grid[i][j] < 0 {
+				ui.PopulateGrid(game.Grid)
+				break
 			}
-			ui.Screen.SetContent(col, row, r, nil, style)
-			i++
+			if game.Grid[i][j] > 0 {
+				game.Unexplored[i][j] = game.Grid[i][j]
+				ui.Screen.SetContent(x, y, rune('0'+game.Grid[i][j]), nil, NumberStyle)
+				break
+			}
+      log.Printf("i: %v, j: %v", i, j)
+			game.Explore(i, j)
+			ui.PopulateGrid(game.Unexplored)
 		}
-		j++
+	case tcell.Button2:
+		c, _, _, _ := ui.Screen.GetContent(x, y)
+		if x < ui.XFinish && y < ui.YFinish && (c == EMPTYBOXRUNE || c == FLAGRUNE) {
+			ui.Screen.SetContent(x, y, FLAGRUNE, nil, MineStyle)
+		}
 	}
 }
