@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"log"
 	"os"
 
 	"example.com/minesweeper/common"
@@ -21,7 +20,7 @@ var (
 	MineStyle   = tcell.StyleDefault.Foreground(tcell.ColorRed)
 	NumberStyle = tcell.StyleDefault.Foreground(tcell.ColorYellow)
 	TitleStyle  = tcell.StyleDefault.Foreground(tcell.ColorPurple)
-	GridStyle   = tcell.StyleDefault.Foreground(tcell.ColorGray)
+	GridStyle   = tcell.StyleDefault
 )
 
 type UIManager struct {
@@ -90,17 +89,7 @@ func (ui *UIManager) HandleResizeGrid() {
 	ui.XFinish = 4*common.Length + ui.XOffset
 	ui.YFinish = 2*common.Breadth + ui.YOffset
 
-	if game.Init {
-		game.InitGrids()
-	}
-
-	ui.DrawGrid()
-
-	if ui.ScreenType == common.GAME {
-		ui.PopulateGrid(game.Unexplored)
-	} else {
-		ui.PopulateGrid(game.Grid)
-	}
+	ui.RenderGame()
 }
 
 func (ui *UIManager) HandleKeyEvent(ev *tcell.EventKey) {
@@ -132,6 +121,10 @@ func (ui *UIManager) HandleMouseEvent(ev *tcell.EventMouse) {
 		if x < ui.XFinish && y < ui.YFinish && (c == EMPTYBOXRUNE || c == FLAGRUNE) {
 			i := (x - ui.XOffset) / 4
 			j := (y - ui.YOffset) / 2
+      if game.Init {
+        game.InitGrid(i, j)
+        game.Init = false
+      }
 			if game.Grid[i][j] < 0 {
 				ui.PopulateGrid(game.Grid)
 				break
@@ -141,7 +134,6 @@ func (ui *UIManager) HandleMouseEvent(ev *tcell.EventMouse) {
 				ui.Screen.SetContent(x, y, rune('0'+game.Grid[i][j]), nil, NumberStyle)
 				break
 			}
-      log.Printf("i: %v, j: %v", i, j)
 			game.Explore(i, j)
 			ui.PopulateGrid(game.Unexplored)
 		}

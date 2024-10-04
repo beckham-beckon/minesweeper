@@ -7,13 +7,12 @@ const (
 )
 
 var (
-	Length  int
-	Breadth int
-  Mines   int
+	Length  = 9
+	Breadth = 9
+	Mines   = 10
 )
 
 type Coord struct {
 	X int
 	Y int
 }
-

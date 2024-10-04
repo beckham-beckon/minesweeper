@@ -1,6 +1,26 @@
 package ui
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"example.com/minesweeper/common"
+	"example.com/minesweeper/game"
+	"github.com/gdamore/tcell/v2"
+)
+
+func (ui *UIManager) RenderGame() {
+	r := SMILEYRUNE
+	ui.Screen.SetContent(ui.ScreenWidth/2, ui.YOffset-1, r, nil, GridStyle)
+
+	ui.DrawGrid()
+
+	if game.Init {
+		game.InitUnexplored()
+	}
+	if ui.ScreenType == common.GAME {
+		ui.PopulateGrid(game.Unexplored)
+	} else if ui.ScreenType == common.GAMEOVER {
+		ui.PopulateGrid(game.Grid)
+	}
+}
 
 func (ui *UIManager) DrawGrid() {
 	x1, y1 := ui.XOffset, ui.YOffset
@@ -72,7 +92,7 @@ func (ui *UIManager) PopulateGrid(grid [][]int) {
 				style = NumberStyle
 				if grid[i][j] == 10 {
 					r = EMPTYBOXRUNE
-					style = GridStyle 
+					style = GridStyle
 				}
 			}
 			ui.Screen.SetContent(col, row, r, nil, style)

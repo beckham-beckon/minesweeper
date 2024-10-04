@@ -1,6 +1,8 @@
 package game
 
 import (
+	"log"
+
 	c "example.com/minesweeper/common"
 )
 
@@ -24,6 +26,7 @@ func Explore(x int, y int) {
 	ExploreQ.Enqueue(c.Coord{X: x, Y: y})
 
 	for len(ExploreQ.Coords) > 0 {
+    log.Printf("Length of ExploreQ: %v", len(ExploreQ.Coords))
 		coord := ExploreQ.Dequeue()
 		i, j := coord.X, coord.Y
 		// Boundary Conditions
@@ -34,10 +37,7 @@ func Explore(x int, y int) {
 		if Unexplored[i][j] != 10 {
 			continue
 		}
-		// Update if its not a mine
-		if Grid[i][j] >= 0 {
-			Unexplored[i][j] = Grid[i][j]
-		}
+    Unexplored[i][j] = Grid[i][j]
 		// If its an empty cell, explore further in all directions (including diagonals)
 		if Grid[i][j] == 0 {
 			ExploreQ.Enqueue(c.Coord{X: i + 1, Y: j})
