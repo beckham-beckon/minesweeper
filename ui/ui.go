@@ -121,16 +121,17 @@ func (ui *UIManager) HandleMouseEvent(ev *tcell.EventMouse) {
 		if x < ui.XFinish && y < ui.YFinish && (c == EMPTYBOXRUNE || c == FLAGRUNE) {
 			i := (x - ui.XOffset) / 4
 			j := (y - ui.YOffset) / 2
-      if game.Init {
-        game.InitGrid(i, j)
-        game.Init = false
-      }
+			if game.Init {
+				game.InitGrid(i, j)
+				game.Init = false
+			}
 			if game.Grid[i][j] < 0 {
 				ui.PopulateGrid(game.Grid)
 				break
 			}
 			if game.Grid[i][j] > 0 {
 				game.Unexplored[i][j] = game.Grid[i][j]
+				game.CellsExplored++
 				ui.Screen.SetContent(x, y, rune('0'+game.Grid[i][j]), nil, NumberStyle)
 				break
 			}

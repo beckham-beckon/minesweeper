@@ -7,9 +7,10 @@ import (
 )
 
 var (
-	Grid       [][]int
-	Unexplored [][]int
-	Init       = true
+	Grid          [][]int
+	Unexplored    [][]int
+	Init          = true
+	CellsExplored = 0
 )
 
 func InitUnexplored() {
@@ -45,7 +46,7 @@ func GenerateMines(a int, b int) {
 		// Place mine if block is not a mine
 		for {
 			x, y = generateRandomCoords()
-			if Grid[x][y] >= 0 && x != a && y != b{
+			if Grid[x][y] >= 0 && x != a && y != b {
 				Grid[x][y] = -1 * c.Mines
 				break
 			}
