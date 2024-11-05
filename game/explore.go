@@ -3,6 +3,7 @@ package game
 import (
 	"log"
 
+	"example.com/minesweeper/common"
 	c "example.com/minesweeper/common"
 )
 
@@ -53,9 +54,10 @@ func Explore(x int, y int) {
 	}
 }
 
-func CheckFinish() {
-	totalCells := c.Length * c.Breadth
-	if CellsExplored == totalCells-c.Mines {
-		return
+func CheckComplete() bool {
+	totalCells := common.Length * common.Breadth
+	if CellsExplored == totalCells-common.Mines {
+		return true
 	}
+	return false
 }

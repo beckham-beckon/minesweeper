@@ -74,15 +74,10 @@ func (ui *UIManager) HandleResize() {
 }
 
 func (ui *UIManager) HandleResizeMenu() {
-	ui.DrawMenu()
-}
-
-func (ui *UIManager) HandeResizeGameOver() {
+	ui.RenderMenu()
 }
 
 func (ui *UIManager) HandleResizeGrid() {
-	ui.Screen.Clear()
-
 	ui.XOffset = (ui.ScreenWidth / 2) - 2*common.Length
 	ui.YOffset = (ui.ScreenHeight / 2) - common.Breadth
 
@@ -90,6 +85,11 @@ func (ui *UIManager) HandleResizeGrid() {
 	ui.YFinish = 2*common.Breadth + ui.YOffset
 
 	ui.RenderGame()
+}
+
+func (ui *UIManager) HandeResizeGameOver() {
+    ui.HandleResizeGrid()
+    ui.RenderGameOver()
 }
 
 func (ui *UIManager) HandleKeyEvent(ev *tcell.EventKey) {
@@ -126,7 +126,8 @@ func (ui *UIManager) HandleMouseEvent(ev *tcell.EventMouse) {
 				game.Init = false
 			}
 			if game.Grid[i][j] < 0 {
-				ui.PopulateGrid(game.Grid)
+				ui.ScreenType = common.GAMEOVER
+                ui.HandleResize()
 				break
 			}
 			if game.Grid[i][j] > 0 {
@@ -136,7 +137,12 @@ func (ui *UIManager) HandleMouseEvent(ev *tcell.EventMouse) {
 				break
 			}
 			game.Explore(i, j)
-			ui.PopulateGrid(game.Unexplored)
+			if !game.CheckComplete() {
+				ui.PopulateGrid(game.Unexplored)
+				break
+			}
+			ui.ScreenType = common.GAMEOVER
+            ui.HandleResize()
 		}
 	case tcell.Button2:
 		c, _, _, _ := ui.Screen.GetContent(x, y)

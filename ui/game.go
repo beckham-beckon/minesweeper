@@ -7,17 +7,21 @@ import (
 )
 
 func (ui *UIManager) RenderGame() {
-	r := SMILEYRUNE
-	ui.Screen.SetContent(ui.ScreenWidth/2, ui.YOffset-1, r, nil, GridStyle)
+	ui.Screen.Clear()
 
 	ui.DrawGrid()
 
 	if game.Init {
 		game.InitUnexplored()
 	}
-	if ui.ScreenType == common.GAME {
+	switch ui.ScreenType {
+	case common.GAME:
+		r := SMILEYRUNE
+		ui.Screen.SetContent(ui.ScreenWidth/2, ui.YOffset-1, r, nil, GridStyle)
 		ui.PopulateGrid(game.Unexplored)
-	} else if ui.ScreenType == common.GAMEOVER {
+	case common.GAMEOVER:
+		r := FROWNRUNE
+		ui.Screen.SetContent(ui.ScreenWidth/2, ui.YOffset-1, r, nil, MineStyle) 
 		ui.PopulateGrid(game.Grid)
 	}
 }

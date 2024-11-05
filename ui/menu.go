@@ -20,18 +20,18 @@ var (
 	LastSelectorCoord = c.Coord{X: -1, Y: -1}
 )
 
-func (u *UIManager) renderCenter(s string, x int, y int) {
+func (u *UIManager) RenderCenter(s string, x int, y int) {
 	for _, r := range s {
 		u.Screen.SetContent(x, y, rune(r), nil, TitleStyle)
 		x++
 	}
 }
 
-func (u *UIManager) DrawMenu() {
+func (u *UIManager) RenderMenu() {
 	u.Screen.Clear()
 	y_title := (u.ScreenHeight-len(MenuItems))/2 - 2
 	x_title := (u.ScreenWidth - len(TITLE)) / 2
-	u.renderCenter(TITLE, x_title, y_title)
+	u.RenderCenter(TITLE, x_title, y_title)
 
 	y_menu_item := y_title + 2
 	for _, item := range MenuItems {
@@ -45,7 +45,7 @@ func (u *UIManager) DrawMenu() {
 			item = " " + item
 		}
 
-		u.renderCenter(item, x_menu_item, y_menu_item)
+		u.RenderCenter(item, x_menu_item, y_menu_item)
 		y_menu_item++
 	}
 	u.MenuRenderSelector(0)
