@@ -23,7 +23,7 @@ func main() {
 		log.Fatalf("%v", err)
 	}
 
-  UI.Screen.EnableMouse()
+	UI.Screen.EnableMouse()
 	UI.Screen.Clear()
 
 	for {
@@ -36,8 +36,8 @@ func main() {
 			UI.HandleResize()
 		case *tcell.EventKey:
 			UI.HandleKeyEvent(ev)
-    case *tcell.EventMouse:
-      UI.HandleMouseEvent(ev)
+		case *tcell.EventMouse:
+			UI.HandleMouseEvent(ev)
 		}
 	}
 }

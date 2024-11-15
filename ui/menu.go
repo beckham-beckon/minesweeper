@@ -79,22 +79,22 @@ func (u *UIManager) MenuProcessSelect() {
 			case EASY:
 				c.Length = 9
 				c.Breadth = 9
-        c.Mines = 10
+				c.Mines = 10
 			case MEDIUM:
 				c.Length = 16
 				c.Breadth = 16
-        c.Mines = 40
+				c.Mines = 40
 			case HARD:
 				c.Length = 30
 				c.Breadth = 16
-        c.Mines = 100
+				c.Mines = 100
 			case QUIT:
-        u.Quit()
-        return
+				u.Quit()
+				return
 			}
-      
-      u.ScreenType = c.GAME
-      u.HandleResize()
+
+			u.ScreenType = c.GAME
+			u.HandleResize()
 		}
 	}
 }

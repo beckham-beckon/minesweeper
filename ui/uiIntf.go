@@ -88,8 +88,8 @@ func (ui *UIManager) HandleResizeGrid() {
 }
 
 func (ui *UIManager) HandeResizeGameOver() {
-    ui.HandleResizeGrid()
-    ui.RenderGameOver()
+	ui.HandleResizeGrid()
+	ui.RenderGameOver()
 }
 
 func (ui *UIManager) HandleKeyEvent(ev *tcell.EventKey) {
@@ -127,7 +127,7 @@ func (ui *UIManager) HandleMouseEvent(ev *tcell.EventMouse) {
 			}
 			if game.Grid[i][j] < 0 {
 				ui.ScreenType = common.GAMEOVER
-                ui.HandleResize()
+				ui.HandleResize()
 				break
 			}
 			if game.Grid[i][j] > 0 {
@@ -142,7 +142,7 @@ func (ui *UIManager) HandleMouseEvent(ev *tcell.EventMouse) {
 				break
 			}
 			ui.ScreenType = common.GAMEOVER
-            ui.HandleResize()
+			ui.HandleResize()
 		}
 	case tcell.Button2:
 		c, _, _, _ := ui.Screen.GetContent(x, y)
