@@ -29,7 +29,7 @@ func (u *UIManager) DrawGrid() {
 	x1, y1 := u.XOffset, u.YOffset
 	x2, y2 := u.XFinish, u.YFinish
 
-	for col := x1; col < x2; col = col + 4 {
+	for col := x1; col < x2; col = col + 5 {
 		for row := y1; row <= y2; row++ {
 			u.Screen.SetContent(col, row, tcell.RuneVLine, nil, GridStyle)
 		}
